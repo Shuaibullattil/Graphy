@@ -23,11 +23,11 @@ const props = defineProps({
 })
 
 const chartData = {
-  labels: props.rawData.map(item => item.Category), // X-axis (change to your column)
+  labels: props.rawData.map(item => item.Month), // X-axis (change to your column)
   datasets: [
     {
       label: 'Amount', // Y-axis
-      data: props.rawData.map(item => item.Amount), // Change keys based on your Excel
+      data: props.rawData.map(item => item.Sales), // Change keys based on your Excel
       backgroundColor: 'rgba(75, 192, 192, 0.7)'
     }
   ]
