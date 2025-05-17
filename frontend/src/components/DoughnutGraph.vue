@@ -91,11 +91,12 @@ export default {
         });
 
         const backgroundColors = labels.map(() => {
-          const hue = Math.floor(Math.random() * 30) + 90;
-          const saturation = Math.floor(Math.random() * 20) + 60;
-          const lightness = Math.floor(Math.random() * 30) + 40;
-          return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-        });
+            const hue = Math.floor(Math.random() * 360); // Full color spectrum
+            const saturation = Math.floor(Math.random() * 30) + 70; // 70% to 100%
+            const lightness = Math.floor(Math.random() * 20) + 45; // 45% to 65%
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+            });
+
 
         this.chartData = {
           labels,
