@@ -1,1 +1,35 @@
 
+button{
+  padding: 20px;
+  margin: 4px;
+  background-color: rgb(50, 236, 100);
+  border-radius: 20px;
+  font-size: x-large;
+}
+button:hover{
+  background-color: rgb(151, 244, 175);
+}
+
+.gridforGraph {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr); /* 3 equal columns */
+  grid-template-rows: repeat(2, auto);   /* 2 rows */
+  gap: 1rem;
+  padding: 1rem;
+}
+
+/* Responsive behavior: Stack columns on smaller screens */
+@media (max-width: 768px) {
+  .gridforGraph {
+    grid-template-columns: 1fr; /* stack all items in one column */
+  }
+}
+
+.box {
+  background-color: #ededed;
+  padding: 1.5rem;
+  text-align: center;
+  border-radius: 0.5rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
