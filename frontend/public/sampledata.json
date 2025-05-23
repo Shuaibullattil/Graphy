@@ -3,10 +3,5 @@
   { "month": "February", "sales": 450 },
   { "month": "March", "sales": 500 },
   { "month": "April", "sales": 450 },
-  { "month": "May", "sales": 300 },
-  { "month": "June", "sales": 350 },
-  { "month": "July", "sales": 200 },
-  { "month": "August", "sales": 150 },
-  { "month": "September", "sales": 300 },
-  { "month": "October", "sales": 550 }
+  { "month": "May", "sales": 300 }
 ]

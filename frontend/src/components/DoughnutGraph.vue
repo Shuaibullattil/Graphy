@@ -13,6 +13,7 @@ import {
   Title,
 } from 'chart.js';
 import { Doughnut } from 'vue-chartjs';
+import { generateOrderedShades } from '@/utils/colour.js';
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
@@ -104,7 +105,7 @@ export default {
             {
               label: valueKey,
               data: values,
-              backgroundColor: backgroundColors,
+              backgroundColor: generateOrderedShades(labels),
               borderColor: '#fff',
               borderWidth: 1,
             },

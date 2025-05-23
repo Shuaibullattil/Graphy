@@ -1,14 +1,6 @@
-
-button{
-  padding: 20px;
-  margin: 4px;
-  background-color: rgb(50, 236, 100);
-  border-radius: 20px;
-  font-size: x-large;
-}
-button:hover{
-  background-color: rgb(151, 244, 175);
-}
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 .gridforGraph {
   display: grid;

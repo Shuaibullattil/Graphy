@@ -15,6 +15,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar } from 'vue-chartjs';
+import { generateOrderedShades } from '@/utils/colour.js';
 
 ChartJS.register(BarElement, CategoryScale, LinearScale, Title, Tooltip, Legend);
 
@@ -96,13 +97,14 @@ export default {
           return isNaN(val) ? 0 : val;
         });
 
-        // Generate background colors
-        const backgroundColors = labels.map(() => {
-            const hue = Math.floor(Math.random() * 360); // Full color spectrum
-            const saturation = Math.floor(Math.random() * 30) + 70; // 70% to 100%
-            const lightness = Math.floor(Math.random() * 20) + 45; // 45% to 65%
-            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            });
+        // // Generate background colors
+        // const backgroundColors = labels.map(() => {
+        //     const hue = Math.floor(Math.random() * 360); // Full color spectrum
+        //     const saturation = Math.floor(Math.random() * 30) + 70; // 70% to 100%
+        //     const lightness = Math.floor(Math.random() * 20) + 45; // 45% to 65%
+        //     return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        //     });
+
 
 
         this.chartData = {
@@ -111,8 +113,8 @@ export default {
             {
               label: valueKey,
               data: values,
-              backgroundColor: backgroundColors,
-              borderColor: backgroundColors,
+              backgroundColor: generateOrderedShades(labels),
+              borderColor: generateOrderedShades(labels),
               borderWidth: 1,
             },
           ],

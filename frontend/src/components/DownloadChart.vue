@@ -98,7 +98,7 @@ export default {
 .download-button {
   margin-top: 1rem;
   padding: 8px 16px;
-  background-color: #3b82f6;
+  background-color: #550393;
   color: white;
   border: none;
   border-radius: 6px;
@@ -109,7 +109,7 @@ export default {
 }
 
 .download-button:hover {
-  background-color: #2563eb;
+  background-color: #7c3bad;
 }
 
 .icon {

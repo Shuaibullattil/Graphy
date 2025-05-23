@@ -15,9 +15,10 @@ import {
 import { Pie } from 'vue-chartjs';
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
+import { generateOrderedShades } from '@/utils/colour.js';
 
 export default {
-  name: 'PieChart',
+  name: 'PIEChart',
   components: { Pie },
   props: {
     title: {
@@ -100,7 +101,7 @@ export default {
             {
               label: valueKey,
               data: values,
-              backgroundColor: backgroundColors,
+              backgroundColor: generateOrderedShades(labels),
               borderColor: '#fff',
               borderWidth: 1,
             },
