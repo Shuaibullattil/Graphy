@@ -20,7 +20,7 @@
         <div class="w-8 h-8 rounded-lg flex items-center justify-center" style="background-color: #7e52a0;">
           <BarChart3 class="w-5 h-5 text-white" />
         </div>
-        <h2 class="text-xl font-bold text-gray-800">DataViz</h2>
+        <h2 class="text-xl font-bold text-gray-800">Graphy</h2>
       </div>
       
       <!-- Mobile Close Button -->

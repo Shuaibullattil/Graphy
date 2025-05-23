@@ -29,3 +29,10 @@ coverage
 
 *.tsbuildinfo
 .env/
+
+# Ignore Python bytecode and cache folders
+**/__pycache__/
+*.pyc
+
+# Ignore virtual environments (adjust if needed)
+backend/venv/
