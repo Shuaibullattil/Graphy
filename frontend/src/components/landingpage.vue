@@ -114,7 +114,7 @@
                 <DownloadChart :chartRef="piechartref" filename="piechart_graph.png" />
               </div>
               <div ref="piechartref" class="p-4">
-                <PieChart 
+                <PIEChart 
                   title="Pie Chart" 
                   :jsonUrl="graphData.length > 0 ? graphData : '/sampledata.json'" 
                 />
@@ -196,7 +196,7 @@
 import FileUpload from './FileUpload.vue';
 import Doughnut from './DoughnutGraph.vue';
 import BarGraph from './BarGraph.vue';
-import PieChart from './PieChart.vue';
+import PIEChart from './PieChart.vue';
 import DownloadChart from './DownloadChart.vue';
 import { ref } from 'vue';
 import { 
@@ -217,7 +217,7 @@ export default {
     FileUpload,
     Doughnut,
     BarGraph,
-    PieChart,
+    PIEChart,
     DownloadChart,
     LayoutDashboard,
     FileText,
