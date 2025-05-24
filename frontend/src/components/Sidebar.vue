@@ -144,6 +144,7 @@ export default {
       { name: 'Dashboard', icon: 'LayoutDashboard' },
       { name: 'Your Files', icon: 'FileText' },
       { name: 'Graphs', icon: 'BarChart3' },
+      { name: 'Table', icon: 'BarChart3' },
       { name: 'Account', icon: 'User' }
     ]);
 

@@ -223,6 +223,20 @@
           </div>
         </div>
 
+        <div v-else-if="activeTab === 'Table'" class="space-y-6">
+          <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 text-center">
+            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7e52a0 0%, #d295bf 100%)">
+              <FileText class="w-10 h-10 text-white" />
+            </div>
+            <h3 class="text-2xl font-bold text-gray-900 mb-2">Your Files</h3>
+            <p class="text-gray-600 mb-6">File management section coming soon</p>
+            <div class="inline-flex items-center px-6 py-3 rounded-xl text-white font-medium" style="background: linear-gradient(135deg, #d295bf 0%, #e6bccd 100%)">
+              <Clock class="w-4 h-4 mr-2" />
+              Coming Soon
+            </div>
+          </div>
+        </div>
+
         <div v-else-if="activeTab === 'Graphs'" class="space-y-6">
           <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 text-center">
             <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #e6bccd 0%, #7e52a0 100%)">
@@ -314,6 +328,7 @@ export default {
         'Dashboard': 'Data Visualization Dashboard',
         'Your Files': 'Your Files',
         'Graphs': 'Graph Library',
+        'Table': 'Data Tables',
         'Account': 'Account Settings'
       };
       return titles[activeTab.value] || 'Dashboard';
@@ -324,6 +339,7 @@ export default {
         'Dashboard': 'Create and manage your data visualizations with style',
         'Your Files': 'Manage your uploaded files and data sources',
         'Graphs': 'Explore different chart types and visualization options',
+        'Table': 'Edit Your data table here',
         'Account': 'Manage your account settings and preferences'
       };
       return descriptions[activeTab.value] || '';

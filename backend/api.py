@@ -3,6 +3,7 @@ from fastapi import FastAPI,HTTPException
 from db import sheet_data_collection
 from datetime import datetime
 from models import ExcelUploadRequest
+from bson import ObjectId
 
 # uri = "mongodb+srv://shuaibullattil7768:WtMhPfFKO9Dr5opo@sheetdata.tetsjo7.mongodb.net/"
 
@@ -66,7 +67,6 @@ async def upload_excel(payload: ExcelUploadRequest):
             detail=f"An error occurred while uploading files: {str(e)}"
         )
 
-#get all upload files
 @app.get("/get-all-uploads")
 async def get_all_uploads():
     try:
@@ -78,21 +78,34 @@ async def get_all_uploads():
                         "username": "$username"
                     },
                     "files_uploaded": {"$sum": 1},
-                    "files": {"$push": "$file"}
+                    "files": {
+                        "$push": {
+                            "_id": "$_id",       # keep ObjectId
+                            "file": "$file"      # file info
+                        }
+                    }
                 }
             }
         ]
 
         results = await sheet_data_collection.aggregate(pipeline).to_list(length=None)
 
-        # Format results nicely
+        # Convert ObjectId to string before returning
         users_uploads = []
         for r in results:
+            files = [
+                {
+                    "_id": str(f["_id"]),    # Convert ObjectId to string
+                    "file": f["file"]
+                }
+                for f in r["files"]
+            ]
+
             users_uploads.append({
                 "user_id": r["_id"]["user_id"],
                 "username": r["_id"]["username"],
                 "files_uploaded": r["files_uploaded"],
-                "files": r["files"]
+                "files": files
             })
 
         return users_uploads
