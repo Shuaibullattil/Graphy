@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel,EmailStr
 from typing import List, Dict, Any
 
 class SheetData(BaseModel):
@@ -10,3 +10,11 @@ class ExcelUploadRequest(BaseModel):
     user_id: str
     username: str
     files: List[SheetData]
+
+class UserCreate(BaseModel):
+    email: EmailStr
+    password: str
+
+class UserLogin(BaseModel):
+    email: EmailStr
+    password: str
