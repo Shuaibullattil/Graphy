@@ -1,37 +1,14 @@
-
+from fastapi import APIRouter
 from fastapi import FastAPI,HTTPException
-from db import sheet_data_collection
+from app.db.mongodb import sheet_data_collection
+from app.model.models import ExcelUploadRequest
 from datetime import datetime
-from models import ExcelUploadRequest
-from bson import ObjectId
-
-# uri = "mongodb+srv://shuaibullattil7768:WtMhPfFKO9Dr5opo@sheetdata.tetsjo7.mongodb.net/"
-
-# # Create a new client and connect to the server
-# client = AsyncIOMotorClient(uri, server_api=ServerApi('1'))
-# db = client["Graphy_Base"]
-# sheet_data_collection = db["user_sheet_data"]
+from bson import objectid
 
 
+router = APIRouter(prefix="/file", tags=["file"])
 
-app = FastAPI()
-
-#all apis here
-# main.py
-
-@app.post("/hello")
-async def say_hello():
-    message = {"message": "shuaib Hello!"}
-
-    # Save to MongoDB
-    result = await sheet_data_collection.insert_one(message)
-
-    return {
-        "message": message["message"],
-        "inserted_id": str(result.inserted_id)
-    }
-
-@app.post("/upload-excel")
+@router.post("/upload")
 async def upload_excel(payload: ExcelUploadRequest):
     try:
         user_id = payload.user_id
@@ -67,7 +44,7 @@ async def upload_excel(payload: ExcelUploadRequest):
             detail=f"An error occurred while uploading files: {str(e)}"
         )
 
-@app.get("/get-all-uploads")
+@router.get("/all")
 async def get_all_uploads():
     try:
         pipeline = [
