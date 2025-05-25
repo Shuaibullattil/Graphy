@@ -4,11 +4,8 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
+
 MONGO_URI = os.getenv("MONGO_URI")
-
-# MongoDB connection settings
-#uri = "mongodb+srv://shuaibullattil7768:WtMhPfFKO9Dr5opo@sheetdata.tetsjo7.mongodb.net/?retryWrites=true&w=majority"
-
 client = AsyncIOMotorClient(MONGO_URI)
 db = client["Graphy_Base"]
 sheet_data_collection = db["user_sheet_data"]
