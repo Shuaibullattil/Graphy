@@ -1,13 +1,18 @@
 from motor.motor_asyncio import AsyncIOMotorClient
 from passlib.context import CryptContext
 import os
+from dotenv import load_dotenv
+
+load_dotenv()
+MONGO_URI = os.getenv("MONGO_URI")
 
 # MongoDB connection settings
-uri = "mongodb+srv://shuaibullattil7768:WtMhPfFKO9Dr5opo@sheetdata.tetsjo7.mongodb.net/?retryWrites=true&w=majority"
+#uri = "mongodb+srv://shuaibullattil7768:WtMhPfFKO9Dr5opo@sheetdata.tetsjo7.mongodb.net/?retryWrites=true&w=majority"
 
-client = AsyncIOMotorClient(uri)
+client = AsyncIOMotorClient(MONGO_URI)
 db = client["Graphy_Base"]
 sheet_data_collection = db["user_sheet_data"]
+users_collection = db["users"]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
