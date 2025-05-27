@@ -1,9 +1,11 @@
 from fastapi import APIRouter
-from fastapi import FastAPI,HTTPException
+from fastapi import FastAPI,HTTPException,status,Depends
 from app.db.mongodb import sheet_data_collection
-from app.model.models import ExcelUploadRequest
+from app.model.models import ExcelUploadRequest,FileResponse
 from datetime import datetime
 from bson import objectid
+from typing import List, Optional
+from app.auth.auth import oauth2_scheme,decode_token
 
 
 router = APIRouter(prefix="/file", tags=["file"])
@@ -11,8 +13,7 @@ router = APIRouter(prefix="/file", tags=["file"])
 @router.post("/upload")
 async def upload_excel(payload: ExcelUploadRequest):
     try:
-        user_id = payload.user_id
-        username = payload.username
+        email = payload.email
         files_data = payload.files
 
         uploaded_at = datetime.utcnow()
@@ -20,8 +21,7 @@ async def upload_excel(payload: ExcelUploadRequest):
         documents = []
         for file in files_data:
             doc = {
-                "user_id": user_id,
-                "username": username,
+                "email": email,
                 "uploaded_at": uploaded_at,
                 "file": {
                     "fileName": file.fileName,
@@ -89,3 +89,34 @@ async def get_all_uploads():
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Failed to fetch uploads: {str(e)}")
+    
+@router.get("/my", response_model=List[FileResponse])
+async def get_user_files(
+    token: str = Depends(oauth2_scheme)
+    
+):
+    payload = decode_token(token)  # Will raise HTTPException if invalid or expired
+    email = payload.get("sub")
+    if email is None:
+        raise HTTPException(status_code=401, detail="Invalid token payload")
+    try:
+        # Find all documents matching the user's email
+        cursor = sheet_data_collection.find({"email": email})
+        
+        # Convert MongoDB documents to response model
+        files = []
+        async for document in cursor:
+            files.append({
+                "fileName": document["file"]["fileName"],
+                "sheetName": document["file"]["sheetName"],
+                "uploaded_at": document["uploaded_at"],
+                "data": document["file"]["data"]
+            })
+        
+        return files
+
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error retrieving files: {str(e)}"
+        )

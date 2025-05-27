@@ -225,9 +225,6 @@
 
         <div v-else-if="activeTab === 'Table'" class="space-y-6">
           <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 text-center">
-            
-          </div>
-          <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 text-center">
             <Yourtable />
           </div>
         </div>

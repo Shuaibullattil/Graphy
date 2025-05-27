@@ -78,7 +78,7 @@ async def login(data: UserLogin):
     token = create_token({"sub": user["email"]})
     return {"token": token, "token_type": "bearer"}
 
-@router.get("/me")
+@router.get("/whoami")
 async def read_me(token: str = Depends(oauth2_scheme)):
     payload = decode_token(token)  # Will raise HTTPException if invalid or expired
     email = payload.get("sub")
