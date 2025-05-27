@@ -39,26 +39,44 @@ def decode_token(token: str):
 @router.post("/register")
 async def register(user: UserCreate):
     print("Incoming email:", user.email)
-
+    
     # Check if user already exists
     existing_user = await users_collection.find_one({"email": user.email})
-
     if existing_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-
+    
     hashed = hash_password(user.password)
-    await users_collection.insert_one({"email": user.email, "hashed_password": hashed})
-
-    return {"msg": "User registered successfully"}
+    
+    # Insert user
+    await users_collection.insert_one({
+        "name": user.name,
+        "email": user.email, 
+        "password": hashed,
+        "accountType": user.accountType
+    })
+    
+    # Create token with correct syntax
+    token = create_token({"sub": user.email})
+    
+    # Return user data along with token
+    return {
+        "msg": "User registered successfully",
+        "token": token,
+        "user": {
+            "name": user.name,
+            "email": user.email,
+            "accountType": user.accountType
+        }
+    }
 
 
 @router.post("/login")
 async def login(data: UserLogin):
     user = await users_collection.find_one({"email": data.email})
-    if not user or not verify_password(data.password, user["hashed_password"]):
+    if not user or not verify_password(data.password, user["password"]):
         raise HTTPException(status_code=401, detail="Invalid credentials")
     token = create_token({"sub": user["email"]})
-    return {"access_token": token, "token_type": "bearer"}
+    return {"token": token, "token_type": "bearer"}
 
 @router.get("/me")
 async def read_me(token: str = Depends(oauth2_scheme)):
