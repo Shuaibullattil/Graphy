@@ -11,9 +11,12 @@ from app.auth.auth import oauth2_scheme,decode_token
 router = APIRouter(prefix="/file", tags=["file"])
 
 @router.post("/upload")
-async def upload_excel(payload: ExcelUploadRequest):
+async def upload_excel(payload: ExcelUploadRequest,token: str = Depends(oauth2_scheme)):
+    toke_data = decode_token(token)
+    email = toke_data.get("sub")
+    if email is None:
+        raise HTTPException(status_code=401, detail="Invalid token payload") 
     try:
-        email = payload.email
         files_data = payload.files
 
         uploaded_at = datetime.utcnow()

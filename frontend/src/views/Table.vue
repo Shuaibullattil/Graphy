@@ -24,6 +24,7 @@
       
       <!-- Files Display -->
       <div v-else-if="fileData.length > 0" class="flex flex-wrap gap-4">
+        <MultipleFileUploadButton />
         <div 
           v-for="(file, index) in fileData" 
           :key="index"
@@ -118,8 +119,12 @@
 </template>
 
 <script>
+import MultipleFileUploadButton from '@/components/MultipleFileUploadButton.vue';
 export default {
   name: "YourTable",
+  components:{
+    MultipleFileUploadButton
+  },
   data() {
     return {
       selectedFileIndex: 0,

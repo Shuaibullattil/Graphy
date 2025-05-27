@@ -14,7 +14,6 @@ class FileResponse(BaseModel):
     data: List[dict]  # or your specific data structure
 
 class ExcelUploadRequest(BaseModel):
-    email: str
     files: List[SheetData]
 
 class UserCreate(BaseModel):
