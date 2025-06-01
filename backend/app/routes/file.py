@@ -2,6 +2,7 @@ from fastapi import APIRouter
 from fastapi import FastAPI,HTTPException,status,Depends
 from app.db.mongodb import sheet_data_collection
 from app.model.models import ExcelUploadRequest,FileResponse
+from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
 from bson import objectid
 from typing import List, Optional
@@ -123,3 +124,31 @@ async def get_user_files(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Error retrieving files: {str(e)}"
         )
+    
+@router.get("/about")
+async def get_file_details(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = decode_token(token)
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Email not found in token")
+
+        files = sheet_data_collection.find({"email": email})
+
+        result = []
+        async for file in files:
+            file_id = str(file["_id"])
+            sheet_name = file.get("file", {}).get("sheetName", "Unnamed")
+            data = file.get("file", {}).get("data", [])
+            labels = list(data[0].keys()) if data else []
+
+            result.append({
+                "file_id": file_id,
+                "sheetName": sheet_name,
+                "labels": labels
+            })
+
+        return {"files": result}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving files: {str(e)}")

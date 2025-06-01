@@ -10,6 +10,7 @@ client = AsyncIOMotorClient(MONGO_URI)
 db = client["Graphy_Base"]
 sheet_data_collection = db["user_sheet_data"]
 users_collection = db["users"]
+graph_collection = db["user_graphs"]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 

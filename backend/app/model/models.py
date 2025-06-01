@@ -26,3 +26,10 @@ class UserCreate(BaseModel):
 class UserLogin(BaseModel):
     email: EmailStr
     password: str
+
+class FileToGraph(BaseModel):
+    name: str
+    file_id: str
+    sheetName: str
+    labels: List[str]
+    graph_id: str
