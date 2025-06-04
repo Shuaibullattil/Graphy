@@ -1,6 +1,7 @@
 <template>
   <div>
     <Doughnut v-if="chartData" :data="chartData" :options="chartOptions" />
+    <p v-else>Loading chart...</p>
   </div>
 </template>
 
@@ -25,8 +26,8 @@ export default {
       type: String,
       default: 'Default Doughnut Chart',
     },
-    jsonUrl: {
-      type: [String, Array],
+    chartInput: {
+      type: Array,
       required: true,
     },
   },
@@ -55,73 +56,52 @@ export default {
       const numberCount = arr.filter(v => typeof v === 'number' && !isNaN(v)).length;
       return numberCount / arr.length > 0.8;
     },
-    async loadChartData() {
-      try {
-        let rawData;
-
-        if (typeof this.jsonUrl === 'string') {
-          const response = await fetch(this.jsonUrl);
-          rawData = await response.json();
-        } else if (Array.isArray(this.jsonUrl)) {
-          rawData = this.jsonUrl;
-        } else {
-          throw new Error('Invalid jsonUrl type');
-        }
-
-        if (!rawData.length) throw new Error('Empty data');
-
-        const keys = Object.keys(rawData[0]);
-
-        // Build columns
-        const columns = {};
-        keys.forEach(k => {
-          columns[k] = rawData.map(item => item[k]);
-        });
-
-        // Detect label and value columns
-        let labelKey = keys.find(k => this.isMostlyString(columns[k]));
-        let valueKey = keys.find(k => this.isMostlyNumber(columns[k]));
-
-        if (!labelKey) labelKey = keys[0];
-        if (!valueKey) valueKey = keys.find(k => k !== labelKey) || keys[1];
-
-        const labels = rawData.map(item => item[labelKey] ?? 'Unknown');
-        const values = rawData.map(item => {
-          const val = Number(item[valueKey]);
-          return isNaN(val) ? 0 : val;
-        });
-
-        const backgroundColors = labels.map(() => {
-            const hue = Math.floor(Math.random() * 360); // Full color spectrum
-            const saturation = Math.floor(Math.random() * 30) + 70; // 70% to 100%
-            const lightness = Math.floor(Math.random() * 20) + 45; // 45% to 65%
-            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
-            });
-
-
-        this.chartData = {
-          labels,
-          datasets: [
-            {
-              label: valueKey,
-              data: values,
-              backgroundColor: generateOrderedShades(labels),
-              borderColor: '#fff',
-              borderWidth: 1,
-            },
-          ],
-        };
-
-        this.chartOptions.plugins.title.text = this.title;
-      } catch (error) {
-        console.error('Error loading or processing data:', error);
+    processData(data) {
+      if (!Array.isArray(data) || data.length === 0) {
+        throw new Error('Empty or invalid data');
       }
+
+      const keys = Object.keys(data[0]);
+      const columns = {};
+      keys.forEach(k => {
+        columns[k] = data.map(item => item[k]);
+      });
+
+      let labelKey = keys.find(k => this.isMostlyString(columns[k]));
+      let valueKey = keys.find(k => this.isMostlyNumber(columns[k]));
+
+      if (!labelKey) labelKey = keys[0];
+      if (!valueKey) valueKey = keys.find(k => k !== labelKey) || keys[1];
+
+      const labels = data.map(item => item[labelKey] ?? 'Unknown');
+      const values = data.map(item => {
+        const val = Number(item[valueKey]);
+        return isNaN(val) ? 0 : val;
+      });
+
+      this.chartData = {
+        labels,
+        datasets: [
+          {
+            label: valueKey,
+            data: values,
+            backgroundColor: generateOrderedShades(labels),
+            borderColor: '#fff',
+            borderWidth: 1,
+          },
+        ],
+      };
     },
   },
   watch: {
-    jsonUrl: {
-      handler() {
-        this.loadChartData();
+    chartInput: {
+      handler(newVal) {
+        try {
+          this.processData(newVal);
+        } catch (err) {
+          console.error('Error processing data:', err);
+          this.chartData = null;
+        }
       },
       immediate: true,
       deep: true,
