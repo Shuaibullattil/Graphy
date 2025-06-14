@@ -3,6 +3,7 @@
     <!-- File Icons Section -->
     <div class="p-4 bg-gray-50 border-b">
       <h2 class="text-xl font-bold mb-4 text-gray-800">Your Files</h2>
+      <MultipleFileUploadButton />
       
       <!-- Loading State -->
       <div v-if="loading" class="flex items-center justify-center py-8">
@@ -24,7 +25,6 @@
       
       <!-- Files Display -->
       <div v-else-if="fileData.length > 0" class="flex flex-wrap gap-4">
-        <MultipleFileUploadButton />
         <div 
           v-for="(file, index) in fileData" 
           :key="index"

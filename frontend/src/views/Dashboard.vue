@@ -211,15 +211,7 @@
         <!-- Other Tab Contents -->
         <div v-else-if="activeTab === 'Your Files'" class="space-y-6">
           <div class="bg-white/70 backdrop-blur-sm rounded-2xl shadow-xl border border-white/20 p-12 text-center">
-            <div class="w-20 h-20 mx-auto mb-6 rounded-2xl flex items-center justify-center" style="background: linear-gradient(135deg, #7e52a0 0%, #d295bf 100%)">
-              <FileText class="w-10 h-10 text-white" />
-            </div>
-            <h3 class="text-2xl font-bold text-gray-900 mb-2">Your Files</h3>
-            <p class="text-gray-600 mb-6">File management section coming soon</p>
-            <div class="inline-flex items-center px-6 py-3 rounded-xl text-white font-medium" style="background: linear-gradient(135deg, #d295bf 0%, #e6bccd 100%)">
-              <Clock class="w-4 h-4 mr-2" />
-              Coming Soon
-            </div>
+            <myfiles />
           </div>
         </div>
 
@@ -262,6 +254,7 @@ import PIEChart from '@/components/PieChart.vue';
 import DownloadChart from '@/components/DownloadChart.vue';
 import Yourtable from '@/views/Table.vue'
 import Yourgraph from './Yourgraph.vue';
+import Myfiles from './Myfiles.vue';
 import { ref } from 'vue';
 import { 
   Upload,
@@ -294,7 +287,8 @@ export default {
     User,
     Clock,
     Yourtable,
-    Yourgraph
+    Yourgraph,
+    Myfiles
   },
   setup() {
     const bargraphref = ref(null);

@@ -9,6 +9,7 @@ from typing import List, Optional
 from app.auth.auth import oauth2_scheme,decode_token
 from pymongo.errors import PyMongoError
 from app.utils.extractLabelData import extract_fields
+import logging
 
 
 router = APIRouter(prefix="/graph", tags=["graph"])
@@ -99,3 +100,58 @@ async def get_all_my_graph(token: str = Depends(oauth2_scheme)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving graphs: {str(e)}")
+
+
+@router.get("/my-graph-preview")
+async def get_my_graph_preview(
+    name: str,
+    file_id: str,
+    sheetName: str,
+    labels: str,  # comma-separated string
+    graph_id: str,
+    token: str = Depends(oauth2_scheme)
+):
+    try:
+        # Decode and validate token
+        token_data = decode_token(token)
+        email = token_data.get("sub")
+        if not email:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired or invalid")
+
+        # Parse labels from comma-separated string
+        labels_list = [label.strip() for label in labels.split(',') if label.strip()]
+        
+        if not labels_list:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Labels cannot be empty")
+
+        # Fetch file data
+        document = await sheet_data_collection.find_one({"_id": ObjectId(file_id)})
+        if not document:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found")
+
+        file_data = document.get("file", {}).get("data", [])
+        if not file_data:
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="File data is empty")
+
+        # Extract graph data
+        try:
+            graph_data = extract_fields(file_data, labels_list)
+        except Exception as e:
+            logging.error(f"Error extracting fields: {str(e)}")
+            raise HTTPException(status_code=500, detail="Failed to extract graph data")
+
+        return {
+            "name": name,
+            "file_id": file_id,
+            "sheetName": sheetName,
+            "labels": labels_list,
+            "graph_id": graph_id,
+            "graph_data": graph_data,
+        }
+
+    except HTTPException as http_ex:
+        raise http_ex  # Re-raise for FastAPI to handle cleanly
+
+    except Exception as e:
+        logging.exception("Unexpected error in get_my_graph_preview")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
