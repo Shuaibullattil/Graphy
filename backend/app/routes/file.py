@@ -1,12 +1,13 @@
 from fastapi import APIRouter
 from fastapi import FastAPI,HTTPException,status,Depends
-from app.db.mongodb import sheet_data_collection
+from app.db.mongodb import sheet_data_collection,graph_collection
 from app.model.models import ExcelUploadRequest,FileResponse
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
-from bson import objectid
+from bson import ObjectId
 from typing import List, Optional
 from app.auth.auth import oauth2_scheme,decode_token
+import logging
 
 
 router = APIRouter(prefix="/file", tags=["file"])
@@ -152,3 +153,36 @@ async def get_file_details(token: str = Depends(oauth2_scheme)):
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving files: {str(e)}")
+
+@router.delete("/drop")
+async def delete_my_file(file_id: str, token: str = Depends(oauth2_scheme)):
+    try:
+        # Validate token
+        token_data = decode_token(token)
+        email = token_data.get("sub")
+        if not email:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+
+        # Validate ObjectId
+        try:
+            obj_id = ObjectId(file_id)
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid file ID format")
+
+        # Check if file exists and belongs to the user
+        existing_file = await sheet_data_collection.find_one({"_id": obj_id, "email": email})
+        if not existing_file:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="File not found or unauthorized access")
+
+        # Delete file
+        await sheet_data_collection.delete_one({"_id": obj_id, "email": email})
+        await graph_collection.delete_many({"file_id": file_id})
+
+        return {"message": "File and associated graphs deleted successfully"}
+
+    except HTTPException as http_ex:
+        raise http_ex
+
+    except Exception as e:
+        logging.exception("Unexpected error while deleting file")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
