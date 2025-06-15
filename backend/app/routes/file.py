@@ -176,7 +176,7 @@ async def delete_my_file(file_id: str, token: str = Depends(oauth2_scheme)):
 
         # Delete file
         await sheet_data_collection.delete_one({"_id": obj_id, "email": email})
-        await graph_collection.delete_many({"file_id": file_id})
+        await graph_collection.delete_many({"file_id": obj_id})
 
         return {"message": "File and associated graphs deleted successfully"}
 

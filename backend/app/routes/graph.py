@@ -65,6 +65,7 @@ async def get_all_my_graph(token: str = Depends(oauth2_scheme)):
 
         async for graph in cursor:
             try:
+                graph_id = str(graph.get("_id"))
                 owner = graph.get("owner")
                 labels = graph.get("labels", [])
                 file_id = graph.get("file_id")
@@ -82,6 +83,7 @@ async def get_all_my_graph(token: str = Depends(oauth2_scheme)):
                 graph_data = extract_fields(file_data, labels)
 
                 result = {
+                    "graph_id": graph_id,
                     "owner": owner,
                     "labels": labels,
                     "graph_name": graph_name,
@@ -154,4 +156,38 @@ async def get_my_graph_preview(
 
     except Exception as e:
         logging.exception("Unexpected error in get_my_graph_preview")
+        raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+    
+@router.delete("/drop")
+async def delete_my_graph(graph_id: str, token: str = Depends(oauth2_scheme)):
+    try:
+        # Decode JWT token and get user email
+        token_data = decode_token(token)
+        email = token_data.get("sub")
+        if not email:
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Not authorized")
+
+        # Validate ObjectId format
+        try:
+            obj_id = ObjectId(graph_id)
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid graph ID format")
+
+        # Check if the graph exists and belongs to the user
+        existing_graph = await graph_collection.find_one({"_id": obj_id, "owner": email})
+        if not existing_graph:
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Graph not found or unauthorized access")
+
+        # Delete the graph
+        result = await graph_collection.delete_one({"_id": obj_id, "owner": email})
+        if result.deleted_count == 0:
+            raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete graph")
+
+        return {"message": "Graph deleted successfully"}
+
+    except HTTPException as http_ex:
+        raise http_ex
+
+    except Exception as e:
+        logging.exception("Unexpected error while deleting graph")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
