@@ -1,6 +1,6 @@
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi import FastAPI,HTTPException
-from app.routes import file,graph
+from app.routes import file,graph,dashboard
 from app.auth import auth
 import uvicorn
 
@@ -16,9 +16,9 @@ app.add_middleware(
 )
 
 app.include_router(file.router)
-# app.include_router(secure.router)
 app.include_router(auth.router,prefix="/auth", tags=["auth"])
 app.include_router(graph.router)
+app.include_router(dashboard.router)
 
 
 if __name__ == "__main__":

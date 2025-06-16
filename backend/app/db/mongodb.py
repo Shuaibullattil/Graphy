@@ -11,6 +11,7 @@ db = client["Graphy_Base"]
 sheet_data_collection = db["user_sheet_data"]
 users_collection = db["users"]
 graph_collection = db["user_graphs"]
+dashboard_collection = db["user_dashboards"]
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
