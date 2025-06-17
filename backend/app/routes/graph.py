@@ -1,6 +1,6 @@
 from fastapi import APIRouter
 from fastapi import FastAPI,HTTPException,status,Depends
-from app.db.mongodb import sheet_data_collection,graph_collection
+from app.db.mongodb import sheet_data_collection,graph_collection,dashboard_collection
 from app.model.models import ExcelUploadRequest,FileResponse,FileToGraph
 from motor.motor_asyncio import AsyncIOMotorClient
 from datetime import datetime
@@ -8,7 +8,7 @@ from bson import ObjectId,errors as bson_errors
 from typing import List, Optional
 from app.auth.auth import oauth2_scheme,decode_token
 from pymongo.errors import PyMongoError
-from app.utils.extractLabelData import extract_fields
+from app.utils.easyGet import extract_fields
 import logging
 
 
@@ -158,10 +158,11 @@ async def get_my_graph_preview(
         logging.exception("Unexpected error in get_my_graph_preview")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
     
+
 @router.delete("/drop")
 async def delete_my_graph(graph_id: str, token: str = Depends(oauth2_scheme)):
     try:
-        # Decode JWT token and get user email
+        # Decode JWT and get user email
         token_data = decode_token(token)
         email = token_data.get("sub")
         if not email:
@@ -183,7 +184,13 @@ async def delete_my_graph(graph_id: str, token: str = Depends(oauth2_scheme)):
         if result.deleted_count == 0:
             raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Failed to delete graph")
 
-        return {"message": "Graph deleted successfully"}
+        # Remove graph ID from all dashboards that include it
+        await dashboard_collection.update_many(
+            {"owner": email},
+            {"$pull": {"graphs": graph_id}}  # Pull string ID, not ObjectId
+        )
+
+        return {"message": "Graph deleted successfully and dashboard references updated"}
 
     except HTTPException as http_ex:
         raise http_ex
