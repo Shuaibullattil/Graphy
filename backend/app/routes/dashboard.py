@@ -59,3 +59,45 @@ async def create_new_dashboard(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Internal server error: {str(e)}"
         )
+    
+@router.get("/about", status_code=200)
+async def get_my_dashboard_about(token: str = Depends(oauth2_scheme)):
+    try:
+        # Decode token to extract email
+        token_data = decode_token(token)
+        email = token_data.get("sub")
+
+        if not email:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid or expired token."
+            )
+
+        # Query dashboards owned by this user
+        cursor = dashboard_collection.find({"owner": email})
+
+        dashboards = []
+        async for dashboard in cursor:
+            dashboards.append({
+                "dashboard_id": str(dashboard.get("_id", "")),
+                "name": dashboard.get("name", ""),
+                "graphs": dashboard.get("graphs", [])
+            })
+
+        return {
+            "message": "Dashboard data retrieved successfully.",
+            "count": len(dashboards),
+            "dashboard": dashboards
+        }
+
+    except HTTPException as http_err:
+        # Re-raise FastAPI's own HTTP exceptions
+        raise http_err
+
+    except Exception as e:
+        # Catch all other unhandled errors
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Internal Server Error: {str(e)}"
+        )
+    

@@ -32,6 +32,7 @@ class FileToGraph(BaseModel):
     file_id: str
     sheetName: str
     labels: List[str]
+    graph_id: str
 
 
 class Dashboard(BaseModel):
