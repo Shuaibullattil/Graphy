@@ -1,10 +1,5 @@
 <template>
   <div class="graphs-container">
-    <div class="header">
-      <h1 class="page-title">My Graphs</h1>
-      <p class="page-subtitle">Manage and visualize your chart data</p>
-    </div>
-
     <div v-if="graphsData.length" class="graphs-grid">
       <div 
         v-for="(graph, index) in graphsData" 
@@ -252,8 +247,6 @@ export default {
 
 <style scoped>
 .graphs-container {
-  padding: 32px;
-  background-color: #f8fafc;
   min-height: 100vh;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
@@ -267,7 +260,7 @@ export default {
   font-size: 2.5rem;
   font-weight: 700;
   color: #1e293b;
-  margin: 0 0 8px 0;
+  margin: 0 0 0 0;
 }
 
 .page-subtitle {
@@ -279,7 +272,7 @@ export default {
 .graphs-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 24px;
+  gap: 16px;
   max-width: 1200px;
   margin: 0 auto;
 }
@@ -294,7 +287,7 @@ export default {
   background: white;
   border-radius: 16px;
   border: 1px solid #e2e8f0;
-  padding: 24px;
+  padding: 8px;
   transition: all 0.2s ease;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -308,7 +301,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 20px;
+  margin-bottom: 8px;
 }
 
 .card-info {
@@ -373,7 +366,7 @@ export default {
 
 .graph-content {
   flex: 1;
-  padding: 16px;
+  padding: 4px;
   display: flex;
   flex-direction: column;
   background: #f8fafc;

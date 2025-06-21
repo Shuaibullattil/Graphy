@@ -10,6 +10,7 @@ from app.auth.auth import oauth2_scheme,decode_token
 import logging
 from bson.errors import InvalidId
 from app.utils.easyGet import get_graph_details_by_id
+import asyncio
 
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
@@ -105,64 +106,48 @@ async def get_my_dashboard_about(token: str = Depends(oauth2_scheme)):
 @router.get("/my/{dashboard_id}")
 async def get_dashboard_by_id(dashboard_id: str, token: str = Depends(oauth2_scheme)):
     try:
-        # Decode JWT token and get user email
         token_data = decode_token(token)
         email = token_data.get("sub")
         if not email:
-            raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Token expired or unauthorized"
-            )
+            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Token expired or unauthorized")
 
-        # Validate dashboard ID
         if not ObjectId.is_valid(dashboard_id):
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail="Invalid dashboard ID"
-            )
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Invalid dashboard ID")
+
         dashboard_obj_id = ObjectId(dashboard_id)
 
-        # Fetch dashboard document and verify ownership
         dashboard = await dashboard_collection.find_one({"_id": dashboard_obj_id, "owner": email})
         if not dashboard:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Dashboard not found or access denied"
-            )
-        dashboard_name = dashboard.get("name","")
+            raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Dashboard not found or access denied")
 
+        dashboard_name = dashboard.get("name", "")
         graph_ids = dashboard.get("graphs", [])
         if not isinstance(graph_ids, list):
-            raise HTTPException(
-                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-                detail="Invalid graph format in dashboard"
-            )
+            raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Invalid graph format in dashboard")
 
-        # Fetch details for each graph
-        graph_details = []
-        for graph_id in graph_ids:
-            try:
-                detail = await get_graph_details_by_id(graph_id)
-                graph_details.append(detail)
-            except HTTPException as e:
-                # Optional: Log or skip individual graph errors
-                graph_details.append({
-                    "graph_id": graph_id,
-                    "error": e.detail
+        # ✅ Use asyncio.gather to fetch all graph details in parallel
+        tasks = [get_graph_details_by_id(graph_id) for graph_id in graph_ids]
+        graph_details = await asyncio.gather(*tasks, return_exceptions=True)
+
+        result = []
+        for i, detail in enumerate(graph_details):
+            if isinstance(detail, HTTPException):
+                result.append({
+                    "graph_id": graph_ids[i],
+                    "error": detail.detail
                 })
+            else:
+                result.append(detail)
 
         return {
             "dashboard_id": dashboard_id,
             "name": dashboard_name,
-            "graph_count": len(graph_details),
-            "graphs": graph_details
+            "graph_count": len(result),
+            "graphs": result
         }
 
     except HTTPException as http_exc:
         raise http_exc
     except Exception as e:
-        raise HTTPException(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail=f"Internal server error: {str(e)}"
-        )
+        raise HTTPException(status_code=500, detail=f"Internal server error: {str(e)}")
     
