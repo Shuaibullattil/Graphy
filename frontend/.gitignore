@@ -28,7 +28,7 @@ coverage
 *.sw?
 
 *.tsbuildinfo
-.env/
+*.env/
 
 # Ignore Python bytecode and cache folders
 **/__pycache__/
