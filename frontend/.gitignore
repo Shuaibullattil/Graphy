@@ -37,4 +37,3 @@ coverage
 # Ignore virtual environments (adjust if needed)
 backend/venv/
 backend/__pycache__
-frontend/.env/
