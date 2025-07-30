@@ -49,7 +49,7 @@
         <component
           :is="getGraphComponent(graph.graph_name)"
           :title="getGraphTitle(graph.name)"
-          :chartInput="graph.graph_data"
+          :chartInput="Array.isArray(graph.graph_data) ? graph.graph_data : []"
           v-if="isValidGraphType(graph.graph_name)"
         />
         

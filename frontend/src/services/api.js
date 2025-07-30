@@ -42,4 +42,37 @@ export const api = {
     });
     return handleResponse(response);
   },
+
+  async getAllFileNames() {
+    const token = sessionStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/file/all-file-names`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
+
+  async searchGraphs({ filename, name, graph_type }) {
+    const token = sessionStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/graph/search`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify({ filename, name, graph_type }),
+    });
+    return handleResponse(response);
+  },
+
+  async getAllMyGraphs() {
+    const token = sessionStorage.getItem('authToken');
+    const response = await fetch(`${API_BASE_URL}/graph/mygraphs`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+    return handleResponse(response);
+  },
 }; 

@@ -38,15 +38,18 @@
       <SearchFilterBar
         v-model:search-query="searchQuery"
         v-model:selected-type="selectedType"
+        v-model:file-name="fileName"
+        :file-names="fileNames"
         :available-graph-types="availableGraphTypes"
-        :filtered-count="filteredGraphs.length"
+        :filtered-count="filteredCount"
         :get-graph-title="getGraphTitle"
+        @search="handleSearch"
       />
 
       <!-- Graphs Grid -->
       <div class="max-w-7xl mx-auto">
         <GraphGrid
-          :graphs="filteredGraphs"
+          :graphs="graphsData"
           :loading="loading"
           :deleting-graph-id="deletingGraphId"
           :get-graph-title="getGraphTitle"
@@ -78,6 +81,7 @@ import DashboardCreator from '../components/DashboardCreator.vue'
 import BarGraph from '@/components/BarGraph.vue'
 import PIEChart from '@/components/PieChart.vue'
 import DoughnutChart from '@/components/DoughnutGraph.vue'
+import { api } from '../services/api.js'
 
 export default {
   name: 'YourGraph',
@@ -97,10 +101,11 @@ export default {
     const isDeleting = ref(false)
     const deletingGraphId = ref(null)
     const isDashboardMode = ref(false)
-
-    // Search and Filter State
+    const fileNames = ref([])
+    const fileName = ref('')
     const searchQuery = ref('')
     const selectedType = ref('')
+    const filteredCount = ref(0)
 
     // GRAPH CONFIGURATION
     const graphConfig = {
@@ -111,16 +116,6 @@ export default {
 
     // Computed properties
     const availableGraphTypes = computed(() => Object.keys(graphConfig))
-
-    const filteredGraphs = computed(() => {
-      return graphsData.value.filter(graph => {
-        const matchesType = selectedType.value ? graph.graph_name === selectedType.value : true
-        const matchesSearch = graph.name
-          ? graph.name.toLowerCase().includes(searchQuery.value.toLowerCase())
-          : false
-        return matchesType && matchesSearch
-      })
-    })
 
     // Helper functions
     const isValidGraphType = (graphName) => graphName in graphConfig
@@ -180,24 +175,66 @@ export default {
       }
     }
 
-    // API call
-    onMounted(async () => {
+    // Fetch all file names
+    const fetchFileNames = async () => {
       try {
-        const token = sessionStorage.getItem('authToken')
-        const response = await axios.get('http://localhost:8000/graph/mygraphs', {
-          headers: { Authorization: `Bearer ${token}` },
-        })
+        const res = await api.getAllFileNames()
+        fileNames.value = res.files || []
+      } catch (e) {
+        fileNames.value = []
+      }
+    }
 
-        if (response.data.data && Array.isArray(response.data.data)) {
-          graphsData.value = response.data.data.filter(graph => 
-            graph.graph_data && Array.isArray(graph.graph_data) && graph.graph_data.length > 0
-          )
-        }
-      } catch (error) {
-        console.error('Error fetching graph data:', error)
+    // Fetch all graphs (default)
+    const fetchAllGraphs = async () => {
+      loading.value = true
+      try {
+        const res = await api.getAllMyGraphs()
+        graphsData.value = res.data || []
+        filteredCount.value = (res.data || []).length
+      } catch (e) {
+        graphsData.value = []
+        filteredCount.value = 0
       } finally {
         loading.value = false
       }
+    }
+
+    // Search graphs
+    const searchGraphs = async () => {
+      loading.value = true
+      try {
+        // Only search if any filter is set
+        if (searchQuery.value || selectedType.value || fileName.value) {
+          const res = await api.searchGraphs({
+            name: searchQuery.value,
+            graph_type: selectedType.value,
+            filename: fileName.value,
+          })
+          graphsData.value = res.data || []
+          filteredCount.value = res.count || 0
+        } else {
+          await fetchAllGraphs()
+        }
+      } catch (e) {
+        graphsData.value = []
+        filteredCount.value = 0
+      } finally {
+        loading.value = false
+      }
+    }
+
+    // Handler for SearchFilterBar
+    const handleSearch = ({ searchQuery: sq, selectedType: st, fileName: fn }) => {
+      searchQuery.value = sq
+      selectedType.value = st
+      fileName.value = fn
+      searchGraphs()
+    }
+
+    onMounted(async () => {
+      await fetchFileNames()
+      await fetchAllGraphs()
     })
 
     return {
@@ -215,7 +252,10 @@ export default {
       deleteGraph,
       searchQuery,
       selectedType,
-      filteredGraphs,
+      filteredCount,
+      fileNames,
+      fileName,
+      handleSearch,
       isDashboardMode,
       toggleDashboardCreation,
       onDashboardCreated,

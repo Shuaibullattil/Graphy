@@ -40,7 +40,7 @@
                                     </div>
                                     <div class="flex-1 min-w-0">
                                         <h2 class="text-lg font-semibold text-gray-900 truncate">
-                                            {{ file.sheetName }}
+                                            {{ file.fileName }}
                                         </h2>
                                     </div>
                                 </div>

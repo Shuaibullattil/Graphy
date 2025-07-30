@@ -139,17 +139,42 @@ async def get_file_details(token: str = Depends(oauth2_scheme)):
         result = []
         async for file in files:
             file_id = str(file["_id"])
-            sheet_name = file.get("file", {}).get("sheetName", "Unnamed")
+            file_name = file.get("file", {}).get("fileName", "Unnamed")
             data = file.get("file", {}).get("data", [])
             labels = list(data[0].keys()) if data else []
 
             result.append({
                 "file_id": file_id,
-                "sheetName": sheet_name,
+                "fileName": file_name,
                 "labels": labels
             })
 
         return {"files": result}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error retrieving files: {str(e)}")
+    
+@router.get("/all-file-names")
+async def get_file_details(token: str = Depends(oauth2_scheme)):
+    try:
+        payload = decode_token(token)
+        email = payload.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Email not found in token")
+
+        files = sheet_data_collection.find({"email": email})
+
+        result = []
+        async for file in files:
+            file_id = str(file["_id"])
+            file_name = file.get("file", {}).get("fileName", "Unnamed")
+
+            result.append({
+                "file_id": file_id,
+                "fileName": file_name,
+            })
+
+        return {"count":len(result),"files": result}
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error retrieving files: {str(e)}")

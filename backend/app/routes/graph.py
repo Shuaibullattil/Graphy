@@ -200,3 +200,64 @@ async def delete_my_graph(graph_id: str, token: str = Depends(oauth2_scheme)):
     except Exception as e:
         logging.exception("Unexpected error while deleting graph")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Internal server error")
+
+
+@router.post("/search")
+async def search_graphs(
+    filename: str = None,
+    name: str = None,
+    graph_type: str = None,
+    token: str = Depends(oauth2_scheme)
+):
+    try:
+        token_data = decode_token(token)
+        email = token_data.get("sub")
+        if not email:
+            raise HTTPException(status_code=401, detail="Invalid token: email not found")
+
+        # Build the MongoDB query
+        query = {"owner": email}
+        if name:
+            query["name"] = {"$regex": name, "$options": "i"}
+        if graph_type:
+            query["graph_id"] = graph_type
+
+        # Find all graphs matching the query
+        cursor = graph_collection.find(query)
+        results = []
+
+        from app.utils.easyGet import extract_fields
+
+        async for graph in cursor:
+            file_id = graph.get("file_id")
+            file_doc = await sheet_data_collection.find_one({"_id": ObjectId(file_id)}) if file_id else None
+            file_name = file_doc.get("fileName") if file_doc else None
+
+            # Filter by filename if provided
+            if filename and (not file_name or filename.lower() not in file_name.lower()):
+                continue
+
+            labels = graph.get("labels", [])
+            file_data = file_doc.get("file", {}).get("data", []) if file_doc else []
+            graph_data = extract_fields(file_data, labels)
+
+            graph_id = str(graph.get("_id"))
+            result = {
+                "graph_id": graph_id,
+                "name": graph.get("name"),
+                "owner": graph.get("owner"),
+                "labels": labels,
+                "graph_name": graph.get("graph_id"),
+                "file_name": file_name,
+                "graph_data": graph_data,
+            }
+            results.append(result)
+
+        return {
+            "message": "Filtered graph data",
+            "count": len(results),
+            "data": results
+        }
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error searching graphs: {str(e)}")
