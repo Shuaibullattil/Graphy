@@ -66,6 +66,7 @@ async def get_all_my_graph(token: str = Depends(oauth2_scheme)):
         async for graph in cursor:
             try:
                 graph_id = str(graph.get("_id"))
+                name = graph.get("name")
                 owner = graph.get("owner")
                 labels = graph.get("labels", [])
                 file_id = graph.get("file_id")
@@ -84,6 +85,7 @@ async def get_all_my_graph(token: str = Depends(oauth2_scheme)):
 
                 result = {
                     "graph_id": graph_id,
+                    "name": name,
                     "owner": owner,
                     "labels": labels,
                     "graph_name": graph_name,
